@@ -3,6 +3,8 @@ import pickle
 import sys
 from qtpy import QtGui, QtWidgets
 
+import locale
+locale.setlocale(locale.LC_ALL, '')
 
 class MyTable(QtWidgets.QTableWidget):
     def __init__(self, r, c, parent):
@@ -53,8 +55,13 @@ class MyTable(QtWidgets.QTableWidget):
 
     def set_row(self, data, row):
         for i in range(0, len(data)):
-            self.setItem(row, i, QtWidgets.QTableWidgetItem(
-                str(data[i])))
+            if not isinstance(data[i], str):
+                value = int(data[i])
+                self.setItem(row, i, QtWidgets.QTableWidgetItem(
+                    f'{value:n}'))
+            else:
+                self.setItem(row, i, QtWidgets.QTableWidgetItem(
+                    data[i]))
 
 
 class MarketItem:
@@ -114,6 +121,18 @@ class Example(QtWidgets.QMainWindow):
         super(Example, self).__init__()
 
         self.initUI()
+
+    def set_sales(self):
+        text = QtWidgets.QInputDialog.getDouble(self, "Sales Tax",
+                                             "tax rate (5% = 0.05):")
+        if text[1]:
+            self.sales_tax = text[0]
+
+    def set_brokers(self):
+        text = QtWidgets.QInputDialog.getDouble(self, "Brokers Fee",
+                                             "Brokers fee rate (5% = 0.05):")
+        if text[1]:
+            self.brokers_fee = text[0]
 
     def load(self):
         dialog = QtWidgets.QFileDialog()
@@ -178,16 +197,15 @@ class Example(QtWidgets.QMainWindow):
     def initUI(self):
         self.setGeometry(0, 0, 960, 540)
         self.setWindowTitle('Evecountant')
-        self.setWindowIcon(QtGui.QIcon('web.png'))
+        #self.setWindowIcon(QtGui.QIcon('web.png'))
         self.center()
 
-        exitAction = QtWidgets.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exitAction = QtWidgets.QAction('&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
 
-        importAction = QtWidgets.QAction(QtGui.QIcon('import.png'), '&Import',
-                                         self)
+        importAction = QtWidgets.QAction('&Import', self)
         importAction.setShortcut('Ctrl+I')
         importAction.setStatusTip('Import Market Data')
         importAction.triggered.connect(self.importData)
@@ -201,6 +219,14 @@ class Example(QtWidgets.QMainWindow):
         loadAction.setShortcut('Ctrl+L')
         loadAction.setStatusTip('Load')
         loadAction.triggered.connect(self.load)
+
+        salesAction = QtWidgets.QAction('&Sales Tax', self)
+        salesAction.setStatusTip('Set sales tax rate')
+        salesAction.triggered.connect(self.set_sales)
+
+        brokerAction = QtWidgets.QAction('&Broker Fee', self)
+        brokerAction.setStatusTip('Set brokers fee rate')
+        brokerAction.triggered.connect(self.set_brokers)
 
         self.form_widget = MyTable(0, 12, self)
         self.setCentralWidget(self.form_widget)
@@ -218,8 +244,12 @@ class Example(QtWidgets.QMainWindow):
         fileMenu.addAction(saveAction)
         fileMenu.addAction(loadAction)
 
-        self.toolbar = self.addToolBar('Exit')
-        self.toolbar.addAction(exitAction)
+        taxMenu = menubar.addMenu('&Taxes')
+        taxMenu.addAction(salesAction)
+        taxMenu.addAction(brokerAction)
+
+        #self.toolbar = self.addToolBar('Exit')
+        #self.toolbar.addAction(exitAction)
 
         self.show()
         self.statusBar()
