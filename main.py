@@ -241,7 +241,8 @@ class Example(QtWidgets.QMainWindow):
 
     def center(self):
         qr = self.frameGeometry()
-        cp = QtWidgets.QDesktopWidget().availableGeometry().center()
+        cp = self.screen().availableGeometry().center()
+        
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
