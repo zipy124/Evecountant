@@ -3,6 +3,7 @@ import pickle
 import sys
 from qtpy import QtGui, QtWidgets
 
+
 class MyTable(QtWidgets.QTableWidget):
     def __init__(self, r, c, parent):
         super().__init__(r, c)
@@ -14,18 +15,18 @@ class MyTable(QtWidgets.QTableWidget):
         self.cellChanged.connect(self.c_current)
         self.cellClicked.connect(self.c_clicked)
         self.show()
-        for i in range(0,self.columnCount()):
-            self.setColumnWidth(i,150)
+        for i in range(0, self.columnCount()):
+            self.setColumnWidth(i, 150)
 
     def c_clicked(self):
         if self.currentColumn() == 5:
-            text = QtWidgets.QInputDialog.getInt(self,"Enter Relist Fee",
+            text = QtWidgets.QInputDialog.getInt(self, "Enter Relist Fee",
                                                  "relist fee amount:")
             value = self.item(self.currentRow(), 0)
             self.parent.market_data[value.text()].relist_fee += text[0]
             self.parent.load_market_item(self.parent.market_data[value.text(
 
-            )],self.currentRow())
+            )], self.currentRow())
 
     def c_current(self):
         if self.check_change:
@@ -39,11 +40,11 @@ class MyTable(QtWidgets.QTableWidget):
                     buyq = int(value.text())
                     value = self.item(row, 3)
                     sellq = int(value.text())
-                    self.item(row,col-1).setText(str(buyq-sellq+sstock))
-                    value = self.item(row,0)
+                    self.item(row, col - 1).setText(str(buyq - sellq + sstock))
+                    value = self.item(row, 0)
                     self.parent.market_data[value.text()].base_stock = sstock
                 except:
-                    self.item(row,col).setText("Invalid")
+                    self.item(row, col).setText("Invalid")
             # elif col == 5:
             #     value = self.item(row, 0)
             #     self.parent.market_data[value.text()].relist_fee += \
@@ -51,13 +52,12 @@ class MyTable(QtWidgets.QTableWidget):
             #     self.parent.load_market_item(self.parent.market_data[value.text()],row)
 
     def set_row(self, data, row):
-        for i in range(0,len(data)):
+        for i in range(0, len(data)):
             self.setItem(row, i, QtWidgets.QTableWidgetItem(
                 str(data[i])))
 
 
 class MarketItem:
-
     buy_quantity = 0
     name = ''
     buy_price = 0
@@ -70,16 +70,16 @@ class MarketItem:
     relist_fee = 0
 
     def __init__(self, data):
-        quant = int(data[1])
+        quant = int(data[1].replace(",", ""))
         self.name = data[2]
         self.dates.add(data[0])
-        if int(data[4].split(" ")[0].replace(",","")) > 0:
-            #print("Found first sell for "+self.name)
-            self.sell_price = int(data[3].split(" ")[0].replace(",",""))
+        if int(data[4].split(" ")[0].replace(",", "")) > 0:
+            # print("Found first sell for "+self.name)
+            self.sell_price = int(data[3].split(" ")[0].replace(",", ""))
             self.sell_quantity = quant
-            self.sell_total_price = self.sell_price*self.sell_quantity
+            self.sell_total_price = self.sell_price * self.sell_quantity
         else:
-            #print("Found first buy for " + self.name)
+            # print("Found first buy for " + self.name)
             self.buy_price = int(data[3].split(" ")[0].replace(",", ""))
             self.buy_quantity = quant
             self.buy_total_price = self.buy_price * self.buy_quantity
@@ -87,23 +87,24 @@ class MarketItem:
     def add(self, data):
         if data[0] not in self.dates:
             self.dates.add(data[0])
-            new_quant = int(data[1])
-            new_price = int(data[3].split(" ")[0].replace(",",""))
+            new_quant = int(data[1].replace(",",""))
+            new_price = int(data[3].split(" ")[0].replace(",", ""))
 
-            if int(data[4].split(" ")[0].replace(",","")) > 0:
-                self.sell_price = (self.sell_total_price + (new_price*new_quant))/(
-                        new_quant+self.sell_quantity)
+            if int(data[4].split(" ")[0].replace(",", "")) > 0:
+                self.sell_price = (self.sell_total_price + (
+                            new_price * new_quant)) / (
+                                          new_quant + self.sell_quantity)
                 self.sell_quantity += new_quant
                 self.sell_total_price = self.sell_price * self.sell_quantity
             else:
                 self.buy_price = (self.buy_total_price + (
-                            new_price * new_quant)) / (
-                                          new_quant + self.buy_quantity)
+                        new_price * new_quant)) / (
+                                         new_quant + self.buy_quantity)
                 self.buy_quantity += new_quant
                 self.buy_total_price = self.buy_price * self.buy_quantity
 
-class Example(QtWidgets.QMainWindow):
 
+class Example(QtWidgets.QMainWindow):
     raw_market_data = []
     market_data = {}
     sales_tax = 0.0225
@@ -118,11 +119,11 @@ class Example(QtWidgets.QMainWindow):
         dialog = QtWidgets.QFileDialog()
         dialog.setDefaultSuffix('market')
         path = dialog.getOpenFileName(self, 'Open Market Data',
-                                                     os.getenv(
-            'HOME'),
-                                    'market(*.market)')
+                                      os.getenv(
+                                          'HOME'),
+                                      'market(*.market)')
         if path[0] != '':
-            with open(path[0],'rb') as f:
+            with open(path[0], 'rb') as f:
                 self.market_data = pickle.load(f)
             self.load_market_data()
 
@@ -171,8 +172,8 @@ class Example(QtWidgets.QMainWindow):
         dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         path = dialog.exec()
         if path == QtWidgets.QFileDialog.Accepted:
-            with open(dialog.selectedFiles()[0],'wb') as f:
-                pickle.dump(self.market_data,f)
+            with open(dialog.selectedFiles()[0], 'wb') as f:
+                pickle.dump(self.market_data, f)
 
     def initUI(self):
         self.setGeometry(0, 0, 960, 540)
@@ -225,8 +226,8 @@ class Example(QtWidgets.QMainWindow):
 
     def importData(self):
         text = QtWidgets.QInputDialog.getMultiLineText(self, "Import Market "
-                                                           "Data",
-                                                "Market Data:", "");
+                                                             "Data",
+                                                       "Market Data:", "");
 
         if (text[1]):
             self.raw_market_data = text[0].split('\n')
@@ -242,7 +243,7 @@ class Example(QtWidgets.QMainWindow):
     def center(self):
         qr = self.frameGeometry()
         cp = self.screen().availableGeometry().center()
-        
+
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
