@@ -37,11 +37,11 @@ class MyTable(QtWidgets.QTableWidget):
             value2 = self.item(row, col)
             if col == self.columnCount() - 1:
                 try:
-                    sstock = int(value2.text())
+                    sstock = int(value2.text().replace(",",""))
                     value = self.item(row, 1)
-                    buyq = int(value.text())
+                    buyq = int(value.text().replace(",",""))
                     value = self.item(row, 3)
-                    sellq = int(value.text())
+                    sellq = int(value.text().replace(",",""))
                     self.item(row, col - 1).setText(str(buyq - sellq + sstock))
                     value = self.item(row, 0)
                     self.parent.market_data[value.text()].base_stock = sstock
