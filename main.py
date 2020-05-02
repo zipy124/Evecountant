@@ -73,13 +73,11 @@ class MarketItem:
     sell_price = 0
     sell_total_price = 0
     base_stock = 0
-    dates = set()
     relist_fee = 0
 
     def __init__(self, data):
         quant = int(data[1].replace(",", ""))
         self.name = data[2]
-        self.dates.add(data[0])
         if int(data[4].split(" ")[0].replace(",", "")) > 0:
             # print("Found first sell for "+self.name)
             self.sell_price = int(data[3].split(" ")[0].replace(",", ""))
@@ -92,23 +90,21 @@ class MarketItem:
             self.buy_total_price = self.buy_price * self.buy_quantity
 
     def add(self, data):
-        if data[0] not in self.dates:
-            self.dates.add(data[0])
-            new_quant = int(data[1].replace(",",""))
-            new_price = int(data[3].split(" ")[0].replace(",", ""))
+        new_quant = int(data[1].replace(",",""))
+        new_price = int(data[3].split(" ")[0].replace(",", ""))
 
-            if int(data[4].split(" ")[0].replace(",", "")) > 0:
-                self.sell_price = (self.sell_total_price + (
-                            new_price * new_quant)) / (
-                                          new_quant + self.sell_quantity)
-                self.sell_quantity += new_quant
-                self.sell_total_price = self.sell_price * self.sell_quantity
-            else:
-                self.buy_price = (self.buy_total_price + (
+        if int(data[4].split(" ")[0].replace(",", "")) > 0:
+            self.sell_price = (self.sell_total_price + (
                         new_price * new_quant)) / (
-                                         new_quant + self.buy_quantity)
-                self.buy_quantity += new_quant
-                self.buy_total_price = self.buy_price * self.buy_quantity
+                                      new_quant + self.sell_quantity)
+            self.sell_quantity += new_quant
+            self.sell_total_price = self.sell_price * self.sell_quantity
+        else:
+            self.buy_price = (self.buy_total_price + (
+                    new_price * new_quant)) / (
+                                     new_quant + self.buy_quantity)
+            self.buy_quantity += new_quant
+            self.buy_total_price = self.buy_price * self.buy_quantity
 
 
 class Example(QtWidgets.QMainWindow):
